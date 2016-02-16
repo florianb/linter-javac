@@ -1,4 +1,5 @@
 .DS_Store
+*.class
 *.log
 node_modules/
 .github_changelog_generator

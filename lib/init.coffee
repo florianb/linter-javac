@@ -1,20 +1,30 @@
 {Directory, CompositeDisposable} = require 'atom'
+
 path = require 'path'
 helpers = require 'atom-linter'
 voucher = require 'voucher'
 fs = require 'fs'
 cpConfigFileName = '.classpath'
 
+#JavacParser = require path.join(__dirname, 'models', 'javac-parser.coffee')
+
 module.exports =
   config:
     javaExecutablePath:
-      type: 'string'
       title: 'Path to the javac executable'
+      description: 'tbd'
+      type: 'string'
       default: 'javac'
     classpath:
-      type: 'string'
       title: "Extra classpath for javac"
+      description: 'tbd'
+      type: 'string'
       default: ''
+    cleanupGeneratedFilesAfterBuild:
+      description: 'If enabled, all during the build process generated
+      files (like `*.class`) will be removed automatically.'
+      type: 'boolen'
+      default: true
 
   activate: ->
     require('atom-package-deps').install()
