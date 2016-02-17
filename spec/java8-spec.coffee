@@ -1,42 +1,43 @@
 # This file contains all specs to ensure the fundamental functionality of
 # this plugin in use with java 1.8.
 
+_fs = require 'fs'
 _path = require 'path'
 
 
 _helpers = require _path.join(__dirname, '_spec-helpers.coffee')
 
-describe 'linter-javac', ->
-  describe 'provideLinter()', ->
+
+describe 'linter-javac using java 1.8.0 u74', ->
+  JavacLinter = null # generic reference to the Javac-Linter-instance
+  currentFilePath = '' # introduce generic path for the targeted java-file
+  texteditor = null # introduce a generic texteditor-reference
+
+  describe 'when using a broken java-source file', ->
+    # set the generic path for this test series
+    currentFilePath = _path.join(__dirname, 'fixtures', 'BrokenWorld.java')
+
     beforeEach ->
-      # get linter-module
-      linterJavac = require(
-        _path.join(__dirname, '..', 'lib', 'init.coffee')
-      )
+      waitsForPromise ->
+        atom.packages.activatePackage 'linter'
+        atom.packages.activatePackage 'linter-javac'
+      waitsForPromise ->
+        atom.workspace.open(currentFilePath).then (editor) ->
+          # set generic texteditor-reference
+          texteditor = editor
+          # set the reference to the javac-linter
+          #Linter = require 'linter'
+          JavacLinter = getProvider
 
-      # inject javaExecutablePath
-      linterJavac.javaExecutablePath = 'javac'
+    afterEach ->
+      # close the active workspace-window to ensure a reload
+      atom.workspace.close
 
-      linterJavac.helpers = { exec: () ->
-        console.info 'ping.'
-      }
+    it 'should open the texteditor', ->
+      expect(texteditor.getPath()).toBe(currentFilePath)
 
-      # instantiate linter-worker
-      @linter = linterJavac.provideLinter()
+    it 'should not contain any linter-messages', ->
+      expect(JavacLinter.getMessages().length).toBe(0)
 
-      # stab texteditor, to assure stubbing
-      @texteditor = null
-
-    describe 'when using a broken java-source file', ->
-      beforeEach ->
-        # set proper texteditor-path to the faulty fixture
-        @texteditor = _helpers.texteditorFactory(
-          _path.join(__dirname, 'fixtures', 'broken-world.java')
-        )
-
-      it 'returns at least 8 messages in the linter-message-object', ->
-        waitsForPromise( =>
-          @linter.lint(@texteditor).then( (messages) ->
-            expect(messages.length).toBeGreaterThan(7)
-          )
-        )
+    it 'should file all expected bugs after linting', ->
+      texteditor.save
