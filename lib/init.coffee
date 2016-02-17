@@ -23,7 +23,7 @@ module.exports =
     cleanupGeneratedFilesAfterBuild:
       description: 'If enabled, all during the build process generated
       files (like `*.class`) will be removed automatically.'
-      type: 'boolen'
+      type: 'boolean'
       default: true
 
   activate: ->
