@@ -8,10 +8,13 @@ _path = require 'path'
 _helpers = require _path.join(__dirname, '_spec-helpers.coffee')
 
 
+_linter = require _path.join(__dirname, '..', 'lib', 'init.coffee')
+
+
 describe 'linter-javac using java 1.8.0 u74', ->
-  JavacLinter = null # generic reference to the Javac-Linter-instance
-  currentFilePath = '' # introduce generic path for the targeted java-file
-  texteditor = null # introduce a generic texteditor-reference
+  currentFilePath = '' # general reference to the current java-file
+  texteditor = null # general reference to the texteditor
+  linter = null # general reference to the current linter
 
   describe 'when using a broken java-source file', ->
     # set the generic path for this test series
@@ -25,19 +28,12 @@ describe 'linter-javac using java 1.8.0 u74', ->
         atom.workspace.open(currentFilePath).then (editor) ->
           # set generic texteditor-reference
           texteditor = editor
-          # set the reference to the javac-linter
-          #Linter = require 'linter'
-          JavacLinter = getProvider
-
-    afterEach ->
-      # close the active workspace-window to ensure a reload
-      atom.workspace.close
+          linter = _linter.provideLinter()
 
     it 'should open the texteditor', ->
       expect(texteditor.getPath()).toBe(currentFilePath)
 
-    it 'should not contain any linter-messages', ->
-      expect(JavacLinter.getMessages().length).toBe(0)
-
     it 'should file all expected bugs after linting', ->
-      texteditor.save
+      waitsForPromise ->
+        linter.lint(texteditor).then (result) ->
+          expect(result.length).toBe(9)
